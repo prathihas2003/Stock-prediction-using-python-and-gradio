@@ -1,0 +1,48 @@
+#Define the functions for fetching data, training the model, and making predictions
+import yfinance as yf
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+import gradio as gr
+
+# Function to fetch stock data
+def fetch_stock_data(ticker, start_date, end_date):
+    data = yf.download(ticker, start=start_date, end=end_date)
+    data.reset_index(inplace=True)
+    return data
+
+# Function to train the model
+def train_model(data):
+    data['Date'] = pd.to_datetime(data['Date'])
+    data['Day'] = data['Date'].dt.day
+    data['Month'] = data['Date'].dt.month
+    data['Year'] = data['Date'].dt.year
+    data['DayOfWeek'] = data['Date'].dt.dayofweek
+    
+    # Features for prediction
+    features = ['Day', 'Month', 'Year', 'DayOfWeek']
+    X = data[features]
+    y = data['Close']
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    
+    predictions = model.predict(X_test)
+    mse = mean_squared_error(y_test, predictions)
+    
+    return model, mse
+
+# Function to make predictions
+def predict_stock_price(ticker, start_date, end_date):
+    data = fetch_stock_data(ticker, start_date, end_date)
+    model, mse = train_model(data)
+    
+    # Use the most recent data for prediction
+    latest_data = data.iloc[-1].copy()
+    latest_features = [[latest_data['Day'], latest_data['Month'], latest_data['Year'], latest_data['DayOfWeek']]]
+    
+    prediction = model.predict(latest_features)[0]
+    return f"Predicted closing price for the next day: ${prediction:.2f}", f"Model Mean Squared Error: {mse:.2f}"

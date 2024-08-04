@@ -1,0 +1,17 @@
+# Define the Gradio interface
+iface = gr.Interface(
+    fn=predict_stock_price,
+    inputs=[
+        gr.Textbox(label="Stock Ticker", placeholder="e.g., AAPL"),
+        gr.Textbox(label="Start Date (YYYY-MM-DD)", placeholder="e.g., 2023-01-01"),
+        gr.Textbox(label="End Date (YYYY-MM-DD)", placeholder="e.g., 2023-12-31")
+    ],
+    outputs=[
+        gr.Textbox(label="Prediction"),
+        gr.Textbox(label="Model Error")
+    ],
+    live=True
+)
+
+# Launch the interface
+iface.launch(share=True)  # 'share=True' provides a public URL to access the interface

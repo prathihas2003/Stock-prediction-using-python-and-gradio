@@ -1,0 +1,1 @@
+!pip install gradio yfinance pandas scikit-learn
